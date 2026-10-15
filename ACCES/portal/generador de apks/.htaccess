@@ -1,0 +1,5 @@
+# Servir los APK con el tipo MIME correcto para que Android los instale
+AddType application/vnd.android.package-archive .apk
+
+# No listar carpetas
+Options -Indexes

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sin conexión</title>
+<style>
+  body { margin:0; font-family: -apple-system, Roboto, "Segoe UI", sans-serif; background:#fafafa; color:#333;
+         display:flex; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:24px; box-sizing:border-box; }
+  .icon { font-size:64px; margin-bottom:16px; }
+  h1 { font-size:22px; margin:0 0 8px; }
+  p { color:#666; margin:0 0 24px; }
+  button { background:#2196F3; color:#fff; border:0; border-radius:24px; padding:14px 32px; font-size:16px; }
+</style>
+</head>
+<body>
+<div>
+  <div class="icon">📡</div>
+  <h1>No hay conexión</h1>
+  <p>Revisa tu conexión a internet e inténtalo de nuevo.</p>
+  <button onclick="retry()">Reintentar</button>
+</div>
+<script>
+  function retry() {
+    var m = location.search.match(/[?&]u=([^&]*)/);
+    if (m) location.replace(decodeURIComponent(m[1]));
+  }
+</script>
+</body>
+</html>

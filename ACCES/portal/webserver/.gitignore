@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+dist/
+build/
+*.egg-info/
+
+# runtime data — never commit uploaded/decompiled APK content or keys
+storage/projects/*
+!storage/projects/.gitkeep
+*.db
+*.db-journal
+.env
+secrets/
+*.keystore
+*.jks
+# Exception: the shared signing key intentionally bundled with the app so
+# APK-Lab signs with the same certificate as portal/generador de apks —
+# see backend/app/services/signing_service.py.
+!backend/app/signing/release.jks
+
+.vscode/
+.idea/
+*.log

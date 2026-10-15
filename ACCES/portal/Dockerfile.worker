@@ -1,0 +1,58 @@
+# Worker que compila y firma los APK (lee build_jobs en Postgres).
+# Base Debian (glibc): NO usar Alpine — aapt2 del Android SDK es glibc y falla en musl.
+FROM node:20-bookworm-slim
+
+WORKDIR /app
+
+# Java 17 + utilidades para descargar el SDK
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-17-jdk-headless \
+    wget \
+    unzip \
+    bash \
+    git \
+    ca-certificates \
+    findutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Android SDK (command-line tools + platform-37 + build-tools 36)
+ENV ANDROID_HOME=/opt/android-sdk
+RUN mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip && \
+    unzip -q cmdtools.zip && rm cmdtools.zip && \
+    mkdir -p ${ANDROID_HOME}/cmdline-tools/latest && \
+    mv ${ANDROID_HOME}/cmdline-tools/bin ${ANDROID_HOME}/cmdline-tools/latest/ && \
+    mv ${ANDROID_HOME}/cmdline-tools/lib ${ANDROID_HOME}/cmdline-tools/latest/ && \
+    yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 && \
+    ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager "platforms;android-37.0" "build-tools;36.0.0" "platform-tools" > /dev/null 2>&1
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 \
+    PATH=$PATH:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/build-tools/36.0.0:/opt/android-sdk/platform-tools \
+    APKSIGNER_PATH=/opt/android-sdk/build-tools/36.0.0/apksigner \
+    KEYSTORE_PATH=/app/android.keystore \
+    GRADLE_OPTS="-Dorg.gradle.daemon=false"
+
+# Dependencias de Node
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Código (incluye template-project; ver .railwayignore)
+COPY . .
+
+RUN mkdir -p /app/builds && chmod +x template-project/gradlew || true
+
+# Pre-calentar Gradle: descarga la distribución + dependencias y valida el toolchain (aapt2, etc.)
+# dentro de la imagen, para que el primer build real no tenga que bajar todo y sea rápido.
+RUN cd template-project && \
+    ./gradlew assembleRelease \
+        -PappName="Warmup" \
+        -PhostId="00000000-0000-0000-0000-000000000000" \
+        -PhostSecret="warmup" \
+        -PserverUrl="wss://example.com" \
+        --no-daemon && \
+    test -f app/build/outputs/apk/release/app-release-unsigned.apk && \
+    echo "[warmup] APK de prueba compilado OK" && \
+    rm -rf app/build
+
+# Al arrancar: reconstruir la llave de firma desde la variable KEYSTORE_B64 (base64) y lanzar el worker.
+CMD ["bash","-lc","if [ -n \"$KEYSTORE_B64\" ]; then echo \"$KEYSTORE_B64\" | base64 -d > /app/android.keystore && echo '[entrypoint] keystore reconstruida'; else echo '[entrypoint] ADVERTENCIA: KEYSTORE_B64 vacia, no se podran firmar APK'; fi; exec node worker.js"]

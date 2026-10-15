@@ -1,0 +1,13 @@
+node_modules
+builds
+uploads
+*.apk
+*.jks
+.env
+*.log
+android.keystore
+# El worker SÍ necesita template-project (compila los APK desde ahí), pero no sus cachés
+# locales de build — en Railway se compila desde cero.
+template-project/.gradle
+template-project/build
+template-project/app/build

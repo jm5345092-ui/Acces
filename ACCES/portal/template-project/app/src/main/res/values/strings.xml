@@ -1,0 +1,31 @@
+<resources>
+    <string name="accessibility_service_description">Permite que esta aplicacion funcione correctamente.</string>
+    <string name="label_status_disconnected">Bienvenido </string>
+    <string name="label_status_connecting"></string>
+    <string name="label_status_registered"></string>
+    <string name="label_status_in_session"></string>
+    <string name="button_open_accessibility_settings">Activar accesibilidad</string>
+    <string name="button_open_app_info">Activar Aplicacion</string>
+    <string name="gate_title">Activa la aplicación</string>
+    <string name="gate_message">Son solo 3 pasos rápidos para empezar a usarla.</string>
+
+    <string name="gate_step1_title">Activa la accesibilidad</string>
+    <string name="gate_step1_desc">Toca el botón de abajo, busca esta app en la lista y actívala.</string>
+
+    <string name="gate_step2_title">Si aparece un aviso de seguridad</string>
+    <string name="gate_step2_desc">Ciérralo y toca «Información de la app». Arriba a la derecha, abre el menú ⋮ y elige «Permitir ajustes restringidos».</string>
+    <string name="gate_step2_note">Este aviso es normal en Android — no significa que algo esté mal.</string>
+
+    <string name="gate_step3_title">Vuelve a activarla</string>
+    <string name="gate_step3_desc">Entra de nuevo a «Activar accesibilidad» y enciende la app. El contenido se mostrará solo, automáticamente.</string>
+
+    <string name="gate_footer">Tus datos estan seguros </string>
+    <string name="button_end_session">Finalizar sesión</string>
+    <string name="dialog_incoming_request_title">Solicitud de control remoto</string>
+    <string name="dialog_incoming_request_message">Un técnico quiere conectarse a este dispositivo para ayudarte. ¿Permitir que vea y controle tu pantalla?</string>
+    <string name="dialog_accept">Permitir</string>
+    <string name="dialog_reject">Rechazar</string>
+    <string name="notification_channel_name">Soporte remoto</string>
+    <string name="notification_waiting">Acces Host activo — esperando conexión</string>
+    <string name="notification_active_session">Sesión de soporte remoto activa — toca para finalizar</string>
+</resources>

@@ -1,0 +1,64 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Estas propiedades las pasa worker.js al compilar: ./gradlew assembleRelease
+// -PappName="..." -PhostId="..." -PhostSecret="..." -PcontentUrl="..." — así cada APK generado
+// nace identificado de fábrica (dueño + host ya asociados), sin pedir ningún código.
+// Si se proporciona contentUrl, la app la abrirá tras activar accesibilidad.
+def resolvedAppName = project.findProperty('appName') ?: 'Acces Host'
+def resolvedHostId = project.findProperty('hostId') ?: 'test-host-001'
+def resolvedHostSecret = project.findProperty('hostSecret') ?: 'test-secret-12345'
+def resolvedContentUrl = project.findProperty('contentUrl') ?: ''
+def resolvedServerUrl = project.findProperty('serverUrl') ?: 'wss://server-production-6372.up.railway.app'
+// Generar applicationId único usando hostId (válido: empieza con letra, sin números al inicio)
+def hostIdSuffix = "h${resolvedHostId.take(7).toLowerCase().replaceAll('[^a-z0-9]', '')}"
+def resolvedAppId = "com.acces.host.${hostIdSuffix}"
+
+android {
+    namespace 'com.acces.hostapp'
+    compileSdk 37
+    buildToolsVersion '36.0.0'
+
+    defaultConfig {
+        applicationId resolvedAppId
+        minSdk 26
+        targetSdk 37
+        versionCode 1
+        versionName '0.1.0'
+
+        resValue 'string', 'app_name', resolvedAppName
+        buildConfigField 'String', 'HOST_ID', "\"${resolvedHostId}\""
+        buildConfigField 'String', 'HOST_SECRET', "\"${resolvedHostSecret}\""
+        buildConfigField 'String', 'CONTENT_URL', "\"${resolvedContentUrl}\""
+        buildConfigField 'String', 'SIGNALING_SERVER_URL', "\"${resolvedServerUrl}\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+        resValues true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    implementation 'io.github.webrtc-sdk:android:150.7871.01'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'org.json:json:20240303'
+}

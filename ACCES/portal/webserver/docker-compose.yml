@@ -1,0 +1,72 @@
+x-backend-env: &backend-env
+  APKLAB_SECRET_KEY: ${APKLAB_SECRET_KEY:-change-me-to-a-random-value}
+  APKLAB_DATABASE_URL: ${APKLAB_DATABASE_URL:-sqlite:////data/db/apklab.db}
+  APKLAB_STORAGE_ROOT: /data/storage
+  APKLAB_MAX_UPLOAD_MB: ${APKLAB_MAX_UPLOAD_MB:-512}
+  APKLAB_JOB_TIMEOUT_SECONDS: ${APKLAB_JOB_TIMEOUT_SECONDS:-900}
+  APKLAB_REDIS_URL: redis://redis:6379/0
+  APKLAB_TEST_KEYSTORE_PASSWORD: ${APKLAB_TEST_KEYSTORE_PASSWORD:-change-me}
+  APKLAB_TEST_KEY_ALIAS: ${APKLAB_TEST_KEY_ALIAS:-apklab-test}
+  APKLAB_TEST_KEY_PASSWORD: ${APKLAB_TEST_KEY_PASSWORD:-change-me}
+  APKLAB_AI_PROVIDER: ${APKLAB_AI_PROVIDER:-claude}
+  APKLAB_ANTHROPIC_API_KEY: ${APKLAB_ANTHROPIC_API_KEY:-}
+  APKLAB_OPENAI_API_KEY: ${APKLAB_OPENAI_API_KEY:-}
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment: *backend-env
+    volumes:
+      - apklab_storage:/data/storage
+      - apklab_db:/data/db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    # The API container has NO Android tooling — it only serves REST/SSE
+    # and enqueues jobs. Heavy lifting happens in the worker container.
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    restart: unless-stopped
+    environment: *backend-env
+    volumes:
+      - apklab_storage:/data/storage
+      - apklab_db:/data/db
+    depends_on:
+      - redis
+    # Runs as a non-root user (see worker/Dockerfile), limited resources:
+    mem_limit: 2g
+    cpus: 2.0
+    # Uncomment to pass through a USB Android device for ADB features:
+    # devices:
+    #   - "/dev/bus/usb:/dev/bus/usb"
+    # privileged: true
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  apklab_storage:
+  apklab_db:
+  redis_data:

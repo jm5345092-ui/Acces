@@ -1,0 +1,903 @@
+/* =========================================================
+   ACCES$ — HOST CONSOLE
+   Misma identidad que style.css (cyber verde neón sobre
+   negro, Share Tech Mono) llevada a la pantalla de host,
+   más pulida: glow controlado, jerarquía clara, estados
+   vivos. Cubre host.php + las clases que inyecta host.js.
+   ========================================================= */
+
+:root {
+  --black:        #020403;
+  --black-2:      #050906;
+  --panel:        rgba(5, 13, 9, 0.72);
+  --panel-solid:  #060d09;
+
+  --green:        #00ff66;
+  --green-2:      #19ff82;
+  --green-soft:   #72ffad;
+  --green-glow:   rgba(0, 255, 102, 0.35);
+  --green-light:  rgba(0, 255, 102, 0.12);
+  --green-faint:  rgba(0, 255, 102, 0.035);
+
+  --text:         #e5ffed;
+  --text-soft:    #8aa895;
+  --text-dark:    #4c6755;
+
+  --danger:       #ff4965;
+  --danger-light: rgba(255, 73, 101, 0.12);
+  --danger-border:rgba(255, 73, 101, 0.4);
+
+  --border:       rgba(0, 255, 102, 0.15);
+  --border-light: rgba(0, 255, 102, 0.28);
+
+  --radius:       12px;
+  --radius-sm:    9px;
+  --mono:         'Share Tech Mono', 'Courier New', monospace;
+  --shadow:       0 18px 50px rgba(0, 0, 0, 0.6);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* El atributo hidden debe ganar siempre a los display de abajo. */
+[hidden] { display: none !important; }
+
+body {
+  position: relative;
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--mono);
+  color: var(--text);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(0, 255, 102, 0.13), transparent 38%),
+    radial-gradient(circle at 90% 90%, rgba(0, 255, 102, 0.05), transparent 35%),
+    linear-gradient(135deg, #010302, #040806 50%, #010302);
+  background-attachment: fixed;
+}
+
+/* Rejilla tenue de fondo, firma del portal */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--green-faint) 1px, transparent 1px),
+    linear-gradient(90deg, var(--green-faint) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+body > * { position: relative; z-index: 1; }
+
+button { font-family: inherit; }
+::selection { background: var(--green-glow); color: #001a0b; }
+
+/* Scrollbars en verde */
+* { scrollbar-width: thin; scrollbar-color: var(--border-light) transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 999px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* ===================== Barra superior de info ===================== */
+.host-info-bar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 22px;
+  background: rgba(3, 7, 5, 0.86);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--green-faint), 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.host-info-bar__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.08rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 0 14px var(--green-glow);
+}
+
+.host-flag-img {
+  width: 24px;
+  height: 18px;
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px var(--border-light);
+}
+
+.host-info-bar__id {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.84rem;
+  color: var(--text-soft);
+}
+
+.host-info-bar__app {
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: var(--green-light);
+  border: 1px solid var(--border);
+  color: var(--green-soft);
+  letter-spacing: 0.5px;
+}
+
+.host-info-bar__status-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.screen-ind {
+  font-size: 1.1rem;
+  line-height: 1;
+  filter: grayscale(1) opacity(0.35);
+  transition: filter 0.25s;
+}
+.screen-ind--on { filter: drop-shadow(0 0 6px var(--green-glow)); }
+.screen-ind--off { filter: grayscale(1) opacity(0.35); }
+
+.host-info-bar__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 15px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.host-info-bar__status::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.host-info-bar__status.is-online {
+  color: var(--green);
+  background: var(--green-light);
+  border-color: var(--border-light);
+  text-shadow: 0 0 10px var(--green-glow);
+}
+.host-info-bar__status.is-online::before {
+  box-shadow: 0 0 10px currentColor;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.host-info-bar__status.is-offline {
+  color: var(--text-dark);
+  background: rgba(76, 103, 85, 0.1);
+  border-color: rgba(76, 103, 85, 0.3);
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ===================== Menú de acciones ===================== */
+.host-menu {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  justify-content: flex-start;
+  padding: 12px 22px;
+  margin: 10px auto 0;
+  width: 100%;
+  max-width: 1300px;
+}
+.host-menu__nav,
+.host-menu__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* Separador sutil entre navegación y opciones; se alinea a la izquierda con el resto. */
+.host-menu__options {
+  padding-left: 12px;
+  margin-left: 2px;
+  border-left: 1px solid var(--border);
+}
+
+/* Botón base del menú: fantasma con borde verde */
+.host-menu button {
+  position: relative;
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--panel);
+  color: var(--green-soft);
+  font-size: 0.78rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.08s, color 0.15s, background 0.15s, box-shadow 0.2s, border-color 0.15s;
+}
+.host-menu button:hover {
+  color: #001a0b;
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 22px var(--green-glow);
+}
+.host-menu button:active { transform: translateY(1px); }
+
+.host-menu button.is-active {
+  color: #001a0b;
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 22px var(--green-glow);
+  font-weight: 700;
+}
+
+.host-menu__danger {
+  border-color: var(--danger-border) !important;
+  color: var(--danger) !important;
+}
+.host-menu__danger:hover {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: #1a0206 !important;
+  box-shadow: 0 0 22px var(--danger-light) !important;
+}
+
+/* ===================== Barra de modo patrón ===================== */
+#patternBar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 140;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: calc(100vw - 32px);
+  padding: 13px 18px;
+  border-radius: var(--radius);
+  background: rgba(3, 8, 5, 0.96);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow), 0 0 30px var(--green-faint);
+}
+#patternInfo { font-size: 0.82rem; color: var(--text-soft); letter-spacing: 0.5px; }
+#patternBar button {
+  padding: 8px 15px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--panel);
+  color: var(--green-soft);
+  cursor: pointer;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s, box-shadow 0.2s;
+}
+#patternBar button:hover {
+  background: var(--green); color: #001a0b; box-shadow: 0 0 18px var(--green-glow);
+}
+#patternExit { color: var(--danger); border-color: var(--danger-border); }
+#patternExit:hover { background: var(--danger); color: #1a0206; box-shadow: 0 0 18px var(--danger-light); }
+
+/* ===================== Rejilla principal ===================== */
+.host-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: 1fr;
+  grid-template-areas:
+    "screen text stack cam";
+  gap: 16px;
+  width: 100%;
+  max-width: 1300px;
+  margin: 12px auto 0;
+  padding: 0 22px 18px;
+  overflow: hidden;
+}
+#screenTile    { grid-area: screen; }
+#videoTextTile { grid-area: text; }
+#cameraTile    { grid-area: cam; }
+.host-grid__stack {
+  grid-area: stack;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+}
+.host-grid__stack .tile { flex: 1 1 0; min-height: 0; }
+
+/* ===================== Tiles / paneles ===================== */
+.tile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  min-height: 0;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.25s;
+}
+.tile:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow), 0 0 26px var(--green-faint);
+}
+.tile__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--green-light), transparent);
+}
+.tile__title {
+  font-size: 0.82rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green-soft);
+}
+.tile__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.tile__controls button {
+  width: 32px; height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--green-soft);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.2s, color 0.15s;
+}
+.tile__controls button:hover {
+  border-color: var(--green);
+  color: #001a0b;
+  background: var(--green);
+  box-shadow: 0 0 16px var(--green-glow);
+}
+.tile__search {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 7px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.84rem;
+}
+.tile__search::placeholder { color: var(--text-dark); }
+.tile__search:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-light);
+}
+
+.tile__body {
+  padding: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+.tile__body--video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,255,102,0.03) 0 1px, transparent 1px 3px),
+    #010302;
+  padding: 0;
+  overflow: hidden;
+}
+.tile__body--video video {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.tile__placeholder {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--text-dark);
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+}
+
+/* Radios de cámara (trasera/frontal) */
+.camera-facing {
+  margin-left: 0;
+  gap: 14px;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.camera-facing label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.camera-facing input { accent-color: var(--green); }
+
+/* ===================== Listas (apps / contactos) ===================== */
+.side-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.side-panel__list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.side-panel__list li:hover {
+  background: var(--green-light);
+  border-color: var(--border);
+}
+.side-panel__list li span { display: flex; flex-direction: column; min-width: 0; }
+.side-panel__list small {
+  color: var(--text-dark);
+  font-size: 0.72rem;
+  word-break: break-all;
+}
+.apps-panel__icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: rgba(0, 255, 102, 0.06);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ===================== Video a texto ===================== */
+.video-text-body { display: flex; flex-direction: column; gap: 8px; }
+.video-text-section__label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--green);
+  margin-top: 4px;
+}
+.video-text-section__label--history { color: var(--text-dark); }
+.video-text-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+/* Mapa posicional: cada texto aparece en el lugar EXACTO del elemento en la
+   pantalla del dispositivo. Texto plano, sin recuadros, y clicable: al tocarlo
+   se envía el toque a esa posición. Sirve para operar el equipo cuando el video falla. */
+.video-text-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1080 / 2280;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.video-text-dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  max-width: 46%;
+  padding: 0 2px;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  background: transparent;
+  transition: color 0.12s, text-shadow 0.12s, transform 0.06s;
+}
+.video-text-dot:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow);
+  overflow: visible;
+  white-space: normal;
+  background: rgba(0, 0, 0, 0.82);
+  border-radius: 4px;
+  z-index: 5;
+}
+.video-text-dot.is-tapped { transform: translate(-50%, -50%) scale(0.9); color: var(--green); }
+.video-text-dot.is-link { color: var(--green); text-decoration: underline; }
+/* Historial: texto plano tenue, sin recuadro. */
+.video-text-line {
+  padding: 2px;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  word-break: break-word;
+}
+.video-text-line.is-history { opacity: 0.8; }
+a.video-text-line { color: var(--green); text-decoration: none; }
+a.video-text-line:hover { text-decoration: underline; text-shadow: 0 0 10px var(--green-glow); }
+
+/* ===================== Modales ===================== */
+/* El contenedor NO tapa la pantalla ni oscurece: es una capa que deja pasar los
+   clics. Así cada ventana flota de forma independiente y no se superponen unas a
+   otras. Solo la caja (.modal__box) captura el ratón. */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+.modal[hidden] { display: none; }
+/* La caja flota: JS la centra en cascada al abrir y la mueve al arrastrar. */
+.modal__box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  width: calc(100% - 40px);
+  max-width: 560px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--panel-solid);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), 0 0 40px var(--green-faint);
+}
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--green-light), transparent);
+}
+.modal__title {
+  font-size: 0.92rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green-soft);
+  text-shadow: 0 0 12px var(--green-glow);
+}
+.modal__close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+.modal__close:hover { color: var(--danger); border-color: var(--danger-border); }
+.modal__box > *:not(.modal__header) { overflow-y: auto; }
+
+/* ===================== Permisos + switches ===================== */
+.permissions-list { padding: 8px 16px 16px; max-height: none; }
+.permissions-list li {
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: default;
+  padding: 13px 4px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+}
+.permissions-list li:hover { background: transparent; }
+.permission-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.88rem;
+  padding-right: 14px;
+}
+.permission-label small { color: var(--text-dark); font-size: 0.74rem; line-height: 1.4; }
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px; height: 26px;
+}
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(76, 103, 85, 0.3);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.2s;
+}
+.switch__slider::before {
+  content: "";
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--text-soft);
+  transition: transform 0.18s, background 0.18s;
+}
+.switch input:checked + .switch__slider {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 16px var(--green-glow);
+}
+.switch input:checked + .switch__slider::before { transform: translateX(20px); background: #001a0b; }
+
+/* ===================== Formulario de alertas ===================== */
+.alerts-form { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; }
+.alerts-form label { font-size: 0.78rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.8px; }
+.alerts-form__radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+.alerts-form__radio input { accent-color: var(--green); margin-top: 3px; }
+.alerts-form input[type="text"],
+.alerts-form input[type="number"],
+.alerts-form textarea {
+  padding: 9px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+}
+.alerts-form input:focus,
+.alerts-form textarea:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-light);
+}
+.alerts-form button {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: #001a0b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+  margin-top: 4px;
+  box-shadow: 0 0 20px var(--green-glow);
+  transition: filter 0.15s, box-shadow 0.2s;
+}
+.alerts-form button:hover { filter: brightness(1.12); box-shadow: 0 0 28px var(--green-glow); }
+.alerts-form__hide {
+  background: transparent !important;
+  color: var(--danger) !important;
+  border: 1px solid var(--danger-border) !important;
+  box-shadow: none !important;
+}
+.alerts-form__hide:hover { background: var(--danger-light) !important; }
+
+/* ===================== Menú contextual de app ===================== */
+.app-action-menu {
+  position: fixed;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  min-width: 152px;
+  padding: 6px;
+  background: var(--panel-solid);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+}
+.app-action-menu button {
+  padding: 9px 13px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+}
+.app-action-menu button:hover { background: var(--green-light); color: var(--green-soft); }
+
+/* ===================== Explorador de archivos ===================== */
+.files-explorer { display: flex; flex-direction: column; min-height: 0; }
+.files-path {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+.files-path span { word-break: break-all; }
+.files-path button {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 6px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--panel);
+  color: var(--green-soft);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+}
+.files-path button:hover { background: var(--green); color: #001a0b; }
+.files-list {
+  max-height: 460px;
+  overflow-y: auto;
+  font-size: 0.86rem;
+}
+.files-list > div:hover { background: var(--green-light); }
+
+/* Galería de fotos y controles de accesibilidad:
+   el grid/padding base viene inline en host.php; aquí solo el contenedor. */
+.photos-gallery { min-height: 80px; }
+.accessibility-controls { min-height: 80px; }
+input[type="range"] { accent-color: var(--green); }
+
+/* ===================== Overlay del pad de patrón (host.js) ===================== */
+#patternPad {
+  position: absolute;
+  z-index: 20;
+  width: 46%;
+  aspect-ratio: 3 / 4;
+  top: 10%;
+  left: 27%;
+  background: rgba(1, 4, 2, 0.6);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 0 30px var(--green-faint);
+}
+.pattern-pad-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 4px 9px;
+  font-size: 0.7rem;
+  color: var(--green-soft);
+  background: rgba(3, 8, 5, 0.85);
+  border-bottom: 1px solid var(--border);
+  border-radius: 10px 10px 0 0;
+  cursor: grab;
+  user-select: none;
+}
+.pattern-pad-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.pattern-pad-dot {
+  position: absolute;
+  width: 18px; height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: rgba(0, 255, 102, 0.15);
+  border: 2px solid var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  color: var(--text);
+  cursor: pointer;
+}
+.pattern-pad-dot.is-on {
+  background: var(--green);
+  color: #001a0b;
+  box-shadow: 0 0 14px var(--green-glow);
+}
+.pattern-pad-resize {
+  position: absolute;
+  right: 0; bottom: 0;
+  width: 16px; height: 16px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--green) 50%);
+  border-radius: 0 0 10px 0;
+}
+
+/* ===================== Botones genéricos (usados por host.js) ===================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 17px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: #001a0b;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 0 18px var(--green-glow);
+  transition: filter 0.15s, box-shadow 0.2s;
+}
+.btn:hover { filter: brightness(1.1); box-shadow: 0 0 26px var(--green-glow); }
+.btn--small { padding: 6px 13px; font-size: 0.76rem; }
+.btn--danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #1a0206;
+  box-shadow: 0 0 18px var(--danger-light);
+}
+.btn--danger:hover { filter: brightness(1.1); }
+
+/* ===================== Responsive =====================
+   En pantallas anchas todo cabe sin scroll (dashboard de
+   altura fija). Cuando ya no es posible, se libera el alto
+   y la página vuelve a desplazarse de forma ordenada. */
+@media (max-width: 1100px) {
+  body { height: auto; min-height: 100vh; overflow: auto; }
+  .host-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "screen text"
+      "stack  cam";
+    overflow: visible;
+    padding-bottom: 60px;
+  }
+  .tile__body--video { min-height: 220px; }
+  .host-grid__stack .tile { flex: initial; }
+  .side-panel__list { max-height: 320px; overflow-y: auto; }
+}
+@media (max-width: 680px) {
+  .host-info-bar { padding: 10px 14px; gap: 10px; }
+  .host-info-bar__name { font-size: 0.98rem; }
+  .host-info-bar__status-group { margin-left: 0; }
+  .host-menu { justify-content: flex-start; }
+  .host-menu, .host-grid { padding-left: 14px; padding-right: 14px; }
+  .host-menu button { flex: 1 1 auto; }
+  .host-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "screen"
+      "text"
+      "cam"
+      "stack";
+  }
+}
